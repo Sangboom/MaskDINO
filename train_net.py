@@ -334,6 +334,8 @@ def setup(args):
     add_maskdino_config(cfg)
     cfg.merge_from_file(args.config_file)
     cfg.merge_from_list(args.opts)
+     # automatically set output dir
+    cfg.OUTPUT_DIR = args.config_file[:-5].replace("configs", "output")
     cfg.freeze()
     default_setup(cfg, args)
     setup_logger(output=cfg.OUTPUT_DIR, distributed_rank=comm.get_rank(), name="maskdino")
