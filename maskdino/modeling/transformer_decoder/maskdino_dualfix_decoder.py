@@ -373,14 +373,14 @@ class DualFixDINODecoder(nn.Module):
         size_list = []
         # disable mask, it does not affect performance
         enable_mask = 0
-        if masks is not None:
-            for src in x:
-                if src.size(2) % 32 or src.size(3) % 32:
-                    enable_mask = 1
-        if enable_mask == 0:
-            masks = [torch.zeros((src.size(0), src.size(2), src.size(3)), device=src.device, dtype=torch.bool) for src in x]
+        # if masks is not None:
+        #     for src in x:
+        #         if src.size(2) % 32 or src.size(3) % 32:
+        #             enable_mask = 1
+        # if enable_mask == 0:
+        #     masks = [torch.zeros((src.size(0), src.size(2), src.size(3)), device=src.device, dtype=torch.bool) for src in x]
         src_flatten = []
-        mask_flatten = []
+        # mask_flatten = []
         spatial_shapes = []
         for i in range(self.num_feature_levels):
             idx=self.num_feature_levels-1-i
@@ -388,17 +388,17 @@ class DualFixDINODecoder(nn.Module):
             size_list.append(x[i].shape[-2:])
             spatial_shapes.append(x[idx].shape[-2:])
             src_flatten.append(self.input_proj[idx](x[idx]).flatten(2).transpose(1, 2))
-            mask_flatten.append(masks[i].flatten(1))
+            # mask_flatten.append(masks[i].flatten(1))
         src_flatten = torch.cat(src_flatten, 1)  # bs, \sum{hxw}, c
-        mask_flatten = torch.cat(mask_flatten, 1)  # bs, \sum{hxw}
+        # mask_flatten = torch.cat(mask_flatten, 1)  # bs, \sum{hxw}
         spatial_shapes = torch.as_tensor(spatial_shapes, dtype=torch.long, device=src_flatten.device)
         level_start_index = torch.cat((spatial_shapes.new_zeros((1,)), spatial_shapes.prod(1).cumsum(0)[:-1]))
         valid_ratios = torch.stack([self.get_valid_ratio(m) for m in masks], 1)
 
         predictions_class = []
-        predictions_mask = []
+        # predictions_mask = []
         if self.two_stage:
-            output_memory, output_proposals = gen_encoder_output_proposals(src_flatten, mask_flatten, spatial_shapes)
+            # output_memory, output_proposals = gen_encoder_output_proposals(src_flatten, mask_flatten, spatial_shapes)
             output_memory = self.enc_output_norm(self.enc_output(output_memory))
             enc_outputs_class_unselected = self.class_embed(output_memory)
             enc_outputs_coord_unselected = self._bbox_embed(
@@ -419,7 +419,7 @@ class DualFixDINODecoder(nn.Module):
             interm_outputs=dict()
             interm_outputs['pred_logits'] = outputs_class
             interm_outputs['pred_boxes'] = refpoint_embed_undetach.sigmoid()
-            interm_outputs['pred_masks'] = outputs_mask
+            # interm_outputs['pred_masks'] = outputs_mask
 
             if self.initialize_box_type != 'no':
                 # convert masks into boxes to better initialize box in the decoder

@@ -27,6 +27,7 @@ import detectron2.utils.comm as comm
 from detectron2.checkpoint import DetectionCheckpointer
 from detectron2.config import get_cfg
 from detectron2.data import MetadataCatalog, build_detection_train_loader
+from detectron2.data.datasets import register_coco_instances
 
 from detectron2.evaluation import (
     CityscapesInstanceEvaluator,
@@ -345,6 +346,14 @@ def setup(args):
 def main(args):
     cfg = setup(args)
     print("Command cfg:", cfg)
+
+    if 'armbench_train' in cfg.DATASETS.TRAIN:
+        register_coco_instances('armbench_train', {}, 'datasets/armbench/mix-object-tote/train.json', 'datasets/armbench/mix-object-tote/images')
+    if 'armbench_val' in cfg.DATASETS.TEST:
+        register_coco_instances('armbench_val', {}, 'datasets/armbench/mix-object-tote/val.json', 'datasets/armbench/mix-object-tote/images')
+    if 'armbench_test' in cfg.DATASETS.TEST:
+        register_coco_instances('armbench_test', {}, 'datasets/armbench/mix-object-tote/test.json', 'datasets/armbench/mix-object-tote/images')
+
     if args.eval_only:
         model = Trainer.build_model(cfg)
         DetectionCheckpointer(model, save_dir=cfg.OUTPUT_DIR).resume_or_load(
